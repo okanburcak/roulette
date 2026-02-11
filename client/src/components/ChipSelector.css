@@ -113,4 +113,9 @@
   font-weight: 600;
   letter-spacing: 0.5px;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  transition: color 0.3s;
+}
+
+.chip-selector-balance.low-balance {
+  color: #e74c3c;
 }

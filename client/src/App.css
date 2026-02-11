@@ -1,42 +1,355 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+/* ================================================================
+   App Layout
+   ================================================================ */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ---- Header ---- */
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid var(--panel-border);
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.header-left,
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+}
+
+.header-right {
+  justify-content: flex-end;
+}
+
+.header-center {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* Connection indicator */
+.connection-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.connection-dot.connected {
+  background: #2ecc71;
+  box-shadow: 0 0 6px #2ecc71;
+}
+
+.connection-dot.disconnected {
+  background: var(--danger);
+  box-shadow: 0 0 6px var(--danger);
+}
+
+.connection-label {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* Phase label */
+.phase-label {
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--gold);
+}
+
+/* Countdown */
+.countdown {
+  font-size: 22px;
+  font-weight: 700;
+  min-width: 36px;
   text-align: center;
+  color: var(--text);
+  transition: color 0.3s, transform 0.3s;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.countdown--urgent {
+  color: var(--danger);
+  animation: pulse-urgent 1s ease-in-out infinite;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+@keyframes pulse-urgent {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+/* Result badge */
+.result-number {
+  display: flex;
+  align-items: center;
+}
+
+.result-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: 700;
+  border: 2px solid var(--gold);
+  animation: result-pop 0.4s ease-out;
+}
+
+.result-badge--red {
+  background: #c0392b;
+  color: #fff;
+}
+
+.result-badge--black {
+  background: #1a1a2e;
+  color: #fff;
+}
+
+.result-badge--green {
+  background: #27ae60;
+  color: #fff;
+}
+
+@keyframes result-pop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Player indicator in header */
+.header-player {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.player-color-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ---- Main three-column layout ---- */
+
+.app-main {
+  display: grid;
+  grid-template-columns: 240px 1fr 220px;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Panels */
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.panel-left,
+.panel-right {
+  background: var(--panel-bg);
+  border-right: 1px solid var(--panel-border);
+}
+
+.panel-right {
+  border-right: none;
+  border-left: 1px solid var(--panel-border);
+}
+
+.panel-left > *,
+.panel-right > * {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Center panel */
+.panel-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 12px;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.wheel-container {
+  width: 100%;
+  max-width: 380px;
+  aspect-ratio: 1 / 1;
+}
+
+.table-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  overflow-x: auto;
+}
+
+/* Bet error */
+.bet-error {
+  background: rgba(231, 76, 60, 0.2);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  text-align: center;
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* Controls bar */
+.controls-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.btn--clear {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text);
+}
+
+.btn--clear:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.btn--rebuy {
+  background: var(--gold);
+  color: #1a1a2e;
+  border: 1px solid var(--gold-dim);
+  animation: pulse-rebuy 2s ease-in-out infinite;
+}
+
+.btn--rebuy:hover {
+  background: var(--gold-dim);
+}
+
+@keyframes pulse-rebuy {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(212, 175, 55, 0); }
+}
+
+/* ================================================================
+   Responsive
+   ================================================================ */
+
+/* Tablet: collapse side panels below */
+@media (max-width: 1024px) {
+  .app-main {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
   }
-  to {
-    transform: rotate(360deg);
+
+  .panel-left,
+  .panel-right {
+    border: none;
+    border-top: 1px solid var(--panel-border);
+  }
+
+  .panel-left {
+    order: 2;
+    max-height: 250px;
+  }
+
+  .panel-right {
+    order: 3;
+    max-height: 200px;
+  }
+
+  .panel-center {
+    order: 1;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+/* Mobile: tighter spacing */
+@media (max-width: 600px) {
+  .app-header {
+    padding: 6px 10px;
   }
-}
 
-.card {
-  padding: 2em;
-}
+  .phase-label {
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
 
-.read-the-docs {
-  color: #888;
+  .countdown {
+    font-size: 18px;
+  }
+
+  .header-left,
+  .header-right {
+    min-width: auto;
+  }
+
+  .connection-label {
+    display: none;
+  }
+
+  .panel-center {
+    padding: 8px 4px;
+    gap: 8px;
+  }
+
+  .wheel-container {
+    max-width: 280px;
+  }
+
+  .controls-bar {
+    gap: 8px;
+  }
+
+  .btn {
+    padding: 6px 14px;
+    font-size: 12px;
+  }
 }
