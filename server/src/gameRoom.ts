@@ -24,6 +24,7 @@ export class GameRoom {
   onCountdown: ((seconds: number) => void) | null = null;
   onSpinResult: ((result: SpinResult) => void) | null = null;
   onNewRound: (() => void) | null = null;
+  onReset: (() => void) | null = null;
 
   start() {
     this.phase = 'betting';
@@ -206,6 +207,18 @@ export class GameRoom {
 
   private broadcastState() {
     this.onStateChange?.(this.getState());
+  }
+
+  resetTable() {
+    if (this.timer) clearInterval(this.timer);
+    this.players.clear();
+    this.phase = 'betting';
+    this.countdown = BETTING_DURATION;
+    this.result = null;
+    this.history = [];
+    this.colorIndex = 0;
+    this.onReset?.();
+    this.tick();
   }
 
   destroy() {

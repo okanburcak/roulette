@@ -105,15 +105,12 @@ function drawWheel(ctx: CanvasRenderingContext2D, size: number, rotation: number
   /* --- pocket dividers (gold spokes) --- */
   for (let i = 0; i < NUM_POCKETS; i++) {
     const angle = i * POCKET_ARC - Math.PI / 2;
-    ctx.save();
-    ctx.rotate(angle);
     ctx.beginPath();
-    ctx.moveTo(0, -R_POCKET_INNER);
-    ctx.lineTo(0, -R_POCKET_OUTER);
+    ctx.moveTo(Math.cos(angle) * R_POCKET_INNER, Math.sin(angle) * R_POCKET_INNER);
+    ctx.lineTo(Math.cos(angle) * R_POCKET_OUTER, Math.sin(angle) * R_POCKET_OUTER);
     ctx.strokeStyle = GOLD_ACCENT;
     ctx.lineWidth = 1.5;
     ctx.stroke();
-    ctx.restore();
   }
 
   /* --- coloured pockets --- */
@@ -151,10 +148,9 @@ function drawWheel(ctx: CanvasRenderingContext2D, size: number, rotation: number
     const midAngle = i * POCKET_ARC - Math.PI / 2 + POCKET_ARC / 2;
 
     ctx.save();
-    ctx.rotate(midAngle);
-    ctx.translate(0, -R_NUMBER_TEXT);
+    ctx.translate(Math.cos(midAngle) * R_NUMBER_TEXT, Math.sin(midAngle) * R_NUMBER_TEXT);
     /* rotate so text faces outward (readable from outside the wheel) */
-    ctx.rotate(Math.PI / 2);
+    ctx.rotate(midAngle + Math.PI / 2);
 
     ctx.fillStyle = '#ffffff';
     ctx.shadowColor = 'rgba(0,0,0,0.7)';
@@ -231,19 +227,13 @@ function drawBall(
   size: number,
   angle: number,
   radius: number,
-  wheelRotation: number,
 ) {
   const cx = size / 2;
   const cy = size / 2;
 
-  /* Ball position is in world space.
-     `angle` is the ball's absolute angle.
-     When the ball is in the pocket its radius rotates with the wheel,
-     so we add wheelRotation when the radius <= R_BALL_POCKET. */
-  const effectiveAngle = radius <= R_BALL_POCKET + 1 ? angle + wheelRotation : angle;
-
-  const bx = cx + Math.cos(effectiveAngle) * radius;
-  const by = cy + Math.sin(effectiveAngle) * radius;
+  /* Ball angle is always in world space. */
+  const bx = cx + Math.cos(angle) * radius;
+  const by = cy + Math.sin(angle) * radius;
 
   /* ball shadow */
   ctx.beginPath();
@@ -344,7 +334,7 @@ export default function RouletteWheel({ spinning, targetNumber, onSpinComplete }
 
     /* ball */
     if (s.animating || targetNumber !== null) {
-      drawBall(ctx, size, s.ballAngle, s.ballRadius, s.wheelRotation);
+      drawBall(ctx, size, s.ballAngle, s.ballRadius);
     }
   }, [targetNumber]);
 
@@ -362,45 +352,41 @@ export default function RouletteWheel({ spinning, targetNumber, onSpinComplete }
 
     /* --- compute ball angle target --- */
     const targetIdx = targetNumber !== null ? WHEEL_ORDER.indexOf(targetNumber) : 0;
-    /* The pocket centre angle (in world frame) we want the ball to end up at.
-       We aim to have the ball aligned with the TOP marker, so the pocket at -PI/2.
-       The wheel itself will have rotated; the pocket's world angle =
-       pocketLocalAngle + wheelRotation.  We work backwards from the final
-       wheel rotation to find the right ball angle. */
     const totalWheelTurns = 2;  // how many full turns the wheel makes
-    const totalBallTurns = 6;   // total ball orbits
-
-    /* Final wheel rotation (wheel rotates negatively / clockwise viewed from top) */
-    const finalWheelRotation = -totalWheelTurns * 2 * Math.PI;
+    const totalBallTurns = 6;   // total ball orbits (Phase 1 uses half)
 
     /* The pocket's local angle (in wheel space, from 12-o'clock) */
     const pocketLocal = pocketAngle(targetIdx);
 
-    /* At the end, the pocket sits at pocketLocal + finalWheelRotation in world space.
-       We need the ball to meet the MARKER position at -PI/2 (12 o'clock).
-       So the target world angle for the ball = pocketLocal + finalWheelRotation. */
-    const finalBallAngle = pocketLocal + finalWheelRotation;
+    /* Rotate the wheel so the target pocket ends up under the marker (-PI/2).
+       pocketLocal + finalWheelRotation ≡ -PI/2 (mod 2*PI) */
+    const finalWheelRotation = -Math.PI / 2 - pocketLocal - totalWheelTurns * 2 * Math.PI;
 
-    /* Ball start angle – positioned at -PI/2 (top), but we'll add many turns */
+    /* Ball start angle (world space) at 12 o'clock */
     const ballStart = -Math.PI / 2;
-    const fullBallAngle = ballStart + totalBallTurns * 2 * Math.PI + (finalBallAngle - ballStart) % (2 * Math.PI);
+
+    /* Phase 1 ends after half the ball turns */
+    const phase1EndBall = ballStart + (totalBallTurns * 0.5) * 2 * Math.PI;
+
+    /* Phase 2 target: pocket's world position at Phase 2 end,
+       normalised so the ball continues forward from Phase 1. */
+    const phase2WheelRotation = finalWheelRotation * 0.9;
+    const rawPhase2EndBall = pocketLocal + phase2WheelRotation;
+    const turnsToAdd = Math.ceil((phase1EndBall - rawPhase2EndBall) / (2 * Math.PI));
+    const phase2EndBall = rawPhase2EndBall + turnsToAdd * 2 * Math.PI;
 
     if (elapsed < PHASE_ORBIT_END) {
       /* ---- Phase 1: Fast orbit ---- */
       const t = elapsed / PHASE_ORBIT_END;
-      /* ball races around quickly */
       s.ballAngle = ballStart + easeInOutQuad(t) * (totalBallTurns * 0.5) * 2 * Math.PI;
       s.ballRadius = R_BALL_ORBIT;
-      /* wheel rotates slowly the other way */
       s.wheelRotation = easeInOutQuad(t) * finalWheelRotation * 0.25;
 
     } else if (elapsed < PHASE_DECEL_END) {
       /* ---- Phase 2: Deceleration ---- */
       const t = (elapsed - PHASE_ORBIT_END) / (PHASE_DECEL_END - PHASE_ORBIT_END);
       const easedT = easeOutCubic(t);
-      const phase1EndBall = ballStart + (totalBallTurns * 0.5) * 2 * Math.PI;
-      s.ballAngle = phase1EndBall + easedT * (fullBallAngle - phase1EndBall);
-      /* spiral inward */
+      s.ballAngle = phase1EndBall + easedT * (phase2EndBall - phase1EndBall);
       s.ballRadius = R_BALL_ORBIT + easedT * (R_BALL_POCKET + (R_BALL_ORBIT - R_BALL_POCKET) * 0.2 - R_BALL_ORBIT);
       s.wheelRotation = finalWheelRotation * 0.25 + easedT * (finalWheelRotation * 0.65);
 
@@ -408,19 +394,18 @@ export default function RouletteWheel({ spinning, targetNumber, onSpinComplete }
       /* ---- Phase 3: Drop into pocket ---- */
       const t = (elapsed - PHASE_DECEL_END) / (PHASE_DROP_END - PHASE_DECEL_END);
       const easedT = easeOutQuint(t);
-      s.ballAngle = fullBallAngle;
       const postDecelRadius = R_BALL_POCKET + (R_BALL_ORBIT - R_BALL_POCKET) * 0.2;
       s.ballRadius = postDecelRadius + easedT * (R_BALL_POCKET - postDecelRadius);
       s.wheelRotation = finalWheelRotation * 0.9 + easedT * (finalWheelRotation * 0.1);
+      s.ballAngle = pocketLocal + s.wheelRotation;
 
     } else if (elapsed < PHASE_SETTLE_END) {
       /* ---- Phase 4: Settle / bounce ---- */
       const t = (elapsed - PHASE_DROP_END) / (PHASE_SETTLE_END - PHASE_DROP_END);
-      s.ballAngle = fullBallAngle;
-      /* small bounce */
+      s.wheelRotation = finalWheelRotation;
+      s.ballAngle = pocketLocal + s.wheelRotation;
       const bounce = Math.sin(t * Math.PI * 3) * (1 - t) * (CENTER * 0.03);
       s.ballRadius = R_BALL_POCKET + bounce;
-      s.wheelRotation = finalWheelRotation;
 
       if (!s.settled && t >= 1) {
         s.settled = true;
@@ -431,9 +416,9 @@ export default function RouletteWheel({ spinning, targetNumber, onSpinComplete }
     } else {
       /* safety: past end */
       s.animating = false;
-      s.ballAngle = fullBallAngle;
-      s.ballRadius = R_BALL_POCKET;
       s.wheelRotation = finalWheelRotation;
+      s.ballAngle = pocketLocal + finalWheelRotation;
+      s.ballRadius = R_BALL_POCKET;
       if (!s.settled) {
         s.settled = true;
         onSpinComplete();
@@ -477,7 +462,7 @@ export default function RouletteWheel({ spinning, targetNumber, onSpinComplete }
       /* When idle with a result, show ball in the pocket. */
       if (targetNumber !== null) {
         const targetIdx = WHEEL_ORDER.indexOf(targetNumber);
-        s.ballAngle = pocketAngle(targetIdx);
+        s.ballAngle = pocketAngle(targetIdx) + s.wheelRotation;
         s.ballRadius = R_BALL_POCKET;
       }
       render();
@@ -510,7 +495,7 @@ export default function RouletteWheel({ spinning, targetNumber, onSpinComplete }
         className="roulette-wheel-canvas"
         width={CANVAS_SIZE}
         height={CANVAS_SIZE}
-        style={{ width: CANVAS_SIZE, height: CANVAS_SIZE }}
+        style={{ width: '100%', height: 'auto' }}
       />
     </div>
   );

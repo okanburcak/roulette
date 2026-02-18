@@ -1,0 +1,131 @@
+/* ===== Racetrack / Neighbours Bets ===== */
+
+.racetrack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 680px;
+}
+
+.racetrack.disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* ── Section buttons (Voisins / Tiers / Orphelins) ── */
+.racetrack-sections {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.racetrack-section-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  background: rgba(0, 0, 0, 0.3);
+  color: #f0e6d2;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.racetrack-section-btn:hover:not(:disabled) {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: #d4af37;
+}
+
+.racetrack-section-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.racetrack-section-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.section-cost {
+  font-size: 10px;
+  color: #d4af37;
+}
+
+/* ── Oval track with number slots ── */
+.racetrack-track {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.racetrack-number {
+  width: 30px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform 0.1s, border-color 0.15s;
+  padding: 0;
+}
+
+.racetrack-number:hover:not(:disabled) {
+  transform: scale(1.15);
+  border-color: #d4af37;
+  z-index: 1;
+}
+
+.racetrack-number:active:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.racetrack-number:disabled {
+  cursor: not-allowed;
+}
+
+.racetrack-number.red {
+  background: #c0392b;
+}
+
+.racetrack-number.black {
+  background: #1a1a2e;
+}
+
+.racetrack-number.green {
+  background: #196f3d;
+}
+
+/* Section highlight borders */
+.racetrack-number.voisins {
+  border-bottom: 2px solid rgba(46, 204, 113, 0.5);
+}
+
+.racetrack-number.tiers {
+  border-bottom: 2px solid rgba(52, 152, 219, 0.5);
+}
+
+.racetrack-number.orphelins-a,
+.racetrack-number.orphelins-b {
+  border-bottom: 2px solid rgba(243, 156, 18, 0.5);
+}

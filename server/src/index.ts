@@ -31,6 +31,10 @@ room.onNewRound = () => {
   io.emit('game:newRound');
 };
 
+room.onReset = () => {
+  io.emit('game:reset');
+};
+
 io.on('connection', (socket) => {
   console.log(`Player connected: ${socket.id}`);
 
@@ -86,6 +90,15 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on('game:reset', () => {
+    console.log(`Table reset by: ${socket.id}`);
+    room.resetTable();
+    // Disconnect all sockets so they rejoin fresh
+    for (const [, s] of io.sockets.sockets) {
+      s.disconnect(true);
+    }
+  });
+
   socket.on('disconnect', () => {
     console.log(`Player disconnected: ${socket.id}`);
     room.removePlayer(socket.id);
@@ -94,8 +107,9 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = 3001;
-httpServer.listen(PORT, () => {
-  console.log(`Roulette server running on port ${PORT}`);
+const PORT = parseInt(process.env.PORT || '3001', 10);
+const HOST = process.env.HOST || '0.0.0.0';
+httpServer.listen(PORT, HOST, () => {
+  console.log(`Roulette server running on ${HOST}:${PORT}`);
   room.start();
 });

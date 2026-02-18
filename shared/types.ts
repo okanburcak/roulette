@@ -46,6 +46,14 @@ export interface SpinResult {
   payouts: Record<string, number>;
 }
 
+export interface SpinSummary {
+  winningNumber: number;
+  totalBet: number;
+  totalWin: number;
+  netResult: number;
+  bets: { type: BetType; numbers: number[]; amount: number; won: boolean }[];
+}
+
 export interface ChatMessage {
   playerId: string;
   playerName: string;
@@ -73,6 +81,7 @@ export interface ServerToClientEvents {
   'game:countdown': (seconds: number) => void;
   'game:spin': (result: SpinResult) => void;
   'game:newRound': () => void;
+  'game:reset': () => void;
   'player:joined': (player: Player) => void;
   'player:left': (playerId: string) => void;
   'player:identity': (player: Player) => void;
@@ -88,4 +97,5 @@ export interface ClientToServerEvents {
   'bet:clear': () => void;
   'chat:send': (payload: ChatPayload) => void;
   'player:rebuy': () => void;
+  'game:reset': () => void;
 }

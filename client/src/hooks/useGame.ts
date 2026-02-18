@@ -1,12 +1,18 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { socket } from '../socket';
-import type { GameState, Player, SpinResult, PlaceBetPayload } from '@shared/types';
+import { PAYOUT_MULTIPLIERS } from '../constants/roulette';
+import type { GameState, Player, SpinResult, SpinSummary, PlaceBetPayload } from '@shared/types';
 
 export function useGame() {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [me, setMe] = useState<Player | null>(null);
   const [lastSpin, setLastSpin] = useState<SpinResult | null>(null);
   const [betError, setBetError] = useState<string | null>(null);
+  const [spinHistory, setSpinHistory] = useState<SpinSummary[]>([]);
+
+  // Keep a ref to current player for use in the spin handler
+  const meRef = useRef<Player | null>(null);
+  meRef.current = me;
 
   useEffect(() => {
     socket.on('player:identity', (player) => setMe(player));
@@ -23,6 +29,39 @@ export function useGame() {
     });
     socket.on('game:spin', (result) => {
       setLastSpin(result);
+
+      // Build spin summary from current bets
+      const player = meRef.current;
+      if (player && player.bets.length > 0) {
+        const bets = player.bets.map(b => {
+          const won = b.numbers.includes(result.winningNumber);
+          return { type: b.type, numbers: b.numbers, amount: b.amount, won };
+        });
+        const totalBet = bets.reduce((sum, b) => sum + b.amount, 0);
+        const totalWin = bets
+          .filter(b => b.won)
+          .reduce((sum, b) => sum + b.amount * (PAYOUT_MULTIPLIERS[b.type] ?? 0) + b.amount, 0);
+        const netResult = totalWin - totalBet;
+
+        const summary: SpinSummary = {
+          winningNumber: result.winningNumber,
+          totalBet,
+          totalWin,
+          netResult,
+          bets,
+        };
+
+        setSpinHistory(prev => [summary, ...prev].slice(0, 10));
+      } else {
+        // Player had no bets this round
+        setSpinHistory(prev => [{
+          winningNumber: result.winningNumber,
+          totalBet: 0,
+          totalWin: 0,
+          netResult: 0,
+          bets: [],
+        }, ...prev].slice(0, 10));
+      }
     });
     socket.on('game:newRound', () => {
       setLastSpin(null);
@@ -59,14 +98,20 @@ export function useGame() {
     socket.emit('player:rebuy');
   }, []);
 
+  const resetTable = useCallback(() => {
+    socket.emit('game:reset');
+  }, []);
+
   return {
     gameState,
     me,
     lastSpin,
     betError,
+    spinHistory,
     placeBet,
     removeBet,
     clearBets,
     rebuy,
+    resetTable,
   };
 }

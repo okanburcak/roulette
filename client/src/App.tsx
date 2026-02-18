@@ -8,6 +8,7 @@ import BettingTable from './components/BettingTable';
 import ChipSelector from './components/ChipSelector';
 import Chat from './components/Chat';
 import PlayersPanel from './components/PlayersPanel';
+import Racetrack from './components/Racetrack';
 import './App.css';
 
 const PHASE_LABELS: Record<string, string> = {
@@ -21,7 +22,7 @@ function App() {
   const [selectedChip, setSelectedChip] = useState(10);
   const [spinComplete, setSpinComplete] = useState(false);
 
-  const { gameState, me, lastSpin, betError, placeBet, clearBets, rebuy } = useGame();
+  const { gameState, me, lastSpin, betError, spinHistory, placeBet, clearBets, rebuy, resetTable } = useGame();
   const { messages, sendMessage } = useChat();
   const { playSound } = useSound();
 
@@ -186,6 +187,13 @@ function App() {
             />
           </div>
 
+          <Racetrack
+            selectedChip={selectedChip}
+            onPlaceBet={handlePlaceBet}
+            phase={phase}
+            balance={balance}
+          />
+
           {betError && <div className="bet-error">{betError}</div>}
 
           <div className="controls-bar">
@@ -208,13 +216,19 @@ function App() {
                   Rebuy
                 </button>
               )}
+              <button
+                className="btn btn--reset"
+                onClick={() => { if (window.confirm('Reset table? This kicks all players and clears history.')) resetTable(); }}
+              >
+                Reset Table
+              </button>
             </div>
           </div>
         </section>
 
         {/* Right: Players + History */}
         <aside className="panel panel-right">
-          <PlayersPanel players={players} myId={myId} history={history} />
+          <PlayersPanel players={players} myId={myId} history={history} spinHistory={spinHistory} />
         </aside>
       </main>
     </div>

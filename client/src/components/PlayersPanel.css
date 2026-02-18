@@ -110,6 +110,18 @@
   font-weight: 700;
   font-size: 0.75rem;
   flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.history-badge:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
+}
+
+.history-badge--selected {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 2px #d4af37, 0 0 10px rgba(212, 175, 55, 0.6);
 }
 
 .history-badge--red {
@@ -130,4 +142,138 @@
   font-size: 0.8rem;
   color: rgba(240, 230, 211, 0.5);
   font-style: italic;
+}
+
+/* ── Spin Summary Popover ── */
+.spin-summary-popover {
+  margin: 6px 8px 8px;
+  padding: 10px;
+  background: rgba(13, 13, 30, 0.95);
+  border: 1px solid #d4af37;
+  border-radius: 8px;
+  animation: popover-in 0.2s ease-out;
+}
+
+@keyframes popover-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.spin-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.spin-summary-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: #fff;
+}
+
+.spin-summary-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #d4af37;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.spin-summary-no-bets {
+  font-size: 0.78rem;
+  color: rgba(240, 230, 211, 0.5);
+  font-style: italic;
+  padding: 4px 0;
+}
+
+.spin-summary-bets {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 8px;
+}
+
+.spin-summary-bet {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  padding: 3px 4px;
+  border-radius: 3px;
+}
+
+.spin-summary-bet.won {
+  background: rgba(46, 204, 113, 0.15);
+}
+
+.spin-summary-bet.lost {
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.spin-summary-bet-type {
+  font-weight: 600;
+  min-width: 52px;
+}
+
+.spin-summary-bet-nums {
+  color: rgba(240, 230, 211, 0.6);
+  font-size: 0.7rem;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spin-summary-bet-amount {
+  font-weight: 600;
+  color: #d4af37;
+}
+
+.spin-summary-bet-result {
+  font-weight: 700;
+  width: 18px;
+  text-align: center;
+}
+
+.spin-summary-bet.won .spin-summary-bet-result {
+  color: #2ecc71;
+}
+
+.spin-summary-bet.lost .spin-summary-bet-result {
+  color: #e74c3c;
+}
+
+.spin-summary-footer {
+  border-top: 1px solid rgba(212, 175, 55, 0.2);
+  padding-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.spin-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: rgba(240, 230, 211, 0.7);
+}
+
+.spin-summary-net {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.spin-summary-net.positive {
+  color: #2ecc71;
+}
+
+.spin-summary-net.negative {
+  color: #e74c3c;
 }
