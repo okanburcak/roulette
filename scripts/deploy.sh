@@ -29,6 +29,8 @@ if [ -z "$PM2_CMD" ]; then
   exit 1
 fi
 
+mkdir -p "$ROOT/logs"
+
 if [ -f "$ROOT/ecosystem.config.js" ]; then
   pm2 startOrReload "$ROOT/ecosystem.config.js" --env production
 else
