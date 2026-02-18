@@ -1,10 +1,20 @@
 import express from 'express';
+import path from 'path';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import type { ServerToClientEvents, ClientToServerEvents } from '../../shared/types.js';
 import { GameRoom } from './gameRoom.js';
 
 const app = express();
+
+// Serve built client in production
+const clientDist = path.join(process.cwd(), '..', 'client', 'dist');
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(clientDist));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
+}
 
 const httpServer = createServer(app);
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
