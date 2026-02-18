@@ -34,7 +34,7 @@ mkdir -p "$ROOT/logs"
 if [ -f "$ROOT/ecosystem.config.js" ]; then
   pm2 startOrReload "$ROOT/ecosystem.config.js" --env production
 else
-  pm2 start --name roulette --cwd "$ROOT/server" node dist/index.js --update-env --time
+  pm2 start --name roulette --cwd "$ROOT/server" node dist/server/src/index.js --update-env --time
 fi
 
 echo "Deployment finished. Use 'pm2 status' to check the process." 
