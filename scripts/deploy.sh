@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# ensure we are running under bash (so "set -o pipefail" is available)
+if [ -z "${BASH_VERSION:-}" ]; then
+  exec bash "$0" "$@"
+fi
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
