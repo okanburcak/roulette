@@ -1,16 +1,14 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import cors from 'cors';
 import type { ServerToClientEvents, ClientToServerEvents } from '../../shared/types.js';
 import { GameRoom } from './gameRoom.js';
 
 const app = express();
-app.use(cors());
 
 const httpServer = createServer(app);
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
-  cors: { origin: '*' }
+  
 });
 
 const room = new GameRoom();
@@ -107,7 +105,7 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = parseInt(process.env.PORT || '3001', 10);
+const PORT = parseInt(process.env.PORT || '3007', 10);
 const HOST = process.env.HOST || '0.0.0.0';
 httpServer.listen(PORT, HOST, () => {
   console.log(`Roulette server running on ${HOST}:${PORT}`);
